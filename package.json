@@ -29,6 +29,6 @@
     "zod": "^3.25.0"
   },
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   }
 }
