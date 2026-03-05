@@ -220,14 +220,17 @@ const server = new McpServer({
   version: "0.1.0",
 });
 
-server.tool(
+server.registerTool(
   "searchKnowledgeBase",
-  "Search Red Hat Knowledge Base for solutions and articles. Use error messages or technical keywords. Filter by product or documentType.",
   {
-    query: z.string().describe("Search keywords"),
-    maxResults: z.number().min(1).max(50).optional().default(10).describe("Max results 1-50 (default: 10)"),
-    product: z.string().optional().describe("Product filter: 'OpenShift', 'RHEL' (default: OpenShift)"),
-    documentType: z.string().optional().describe("Type: 'Solution', 'Documentation', 'Article'"),
+    description: "Search Red Hat Knowledge Base for solutions and articles. Use error messages or technical keywords. Filter by product or documentType.",
+    inputSchema: {
+      query: z.string().describe("Search keywords"),
+      maxResults: z.number().min(1).max(50).optional().default(10).describe("Max results 1-50 (default: 10)"),
+      product: z.string().optional().describe("Product filter: 'OpenShift', 'RHEL' (default: OpenShift)"),
+      documentType: z.string().optional().describe("Type: 'Solution', 'Documentation', 'Article'"),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
   async ({ query, maxResults, product, documentType }) => {
     const fq = [];
@@ -246,11 +249,14 @@ server.tool(
   }
 );
 
-server.tool(
+server.registerTool(
   "getSolution",
-  "Get full content of a Knowledge Base article. Use article ID from search results.",
   {
-    solutionId: z.string().describe("Article ID (numeric)"),
+    description: "Get full content of a Knowledge Base article. Use article ID from search results.",
+    inputSchema: {
+      solutionId: z.string().describe("Article ID (numeric)"),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
   async ({ solutionId }) => {
     const data = await kcsSearch(`id:${solutionId}`, {
@@ -269,12 +275,15 @@ server.tool(
   }
 );
 
-server.tool(
+server.registerTool(
   "searchDocumentation",
-  "Search Red Hat documentation for how-to guides and best practices.",
   {
-    topic: z.string().describe("Topic to search"),
-    product: z.string().optional().describe("Product (default: OpenShift)"),
+    description: "Search Red Hat documentation for how-to guides and best practices.",
+    inputSchema: {
+      topic: z.string().describe("Topic to search"),
+      product: z.string().optional().describe("Product (default: OpenShift)"),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
   async ({ topic, product }) => {
     const fq = ['documentKind:"Documentation"'];
@@ -292,11 +301,14 @@ server.tool(
   }
 );
 
-server.tool(
+server.registerTool(
   "getErrata",
-  "Get errata/advisory details by advisory ID (RHSA, RHBA, RHEA). Returns CVEs, severity, affected packages.",
   {
-    advisoryId: z.string().describe("Advisory ID (e.g. 'RHSA-2024:1234')"),
+    description: "Get errata/advisory details by advisory ID (RHSA, RHBA, RHEA). Returns CVEs, severity, affected packages.",
+    inputSchema: {
+      advisoryId: z.string().describe("Advisory ID (e.g. 'RHSA-2024:1234')"),
+    },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
   async ({ advisoryId }) => {
     const data = await getErratumData(advisoryId);
