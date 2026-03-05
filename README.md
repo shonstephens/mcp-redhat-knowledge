@@ -60,7 +60,7 @@ Add to `~/.claude/settings.json`:
   "mcpServers": {
     "redhat-knowledge": {
       "command": "npx",
-      "args": ["-y", "@shonstephens/mcp-redhat-knowledge"],
+      "args": ["-y", "mcp-redhat-knowledge"],
       "env": {
         "REDHAT_TOKEN": "${REDHAT_TOKEN}"
       }
@@ -79,7 +79,7 @@ Add to `.vscode/mcp.json` in your workspace:
     "redhat-knowledge": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@shonstephens/mcp-redhat-knowledge"],
+      "args": ["-y", "mcp-redhat-knowledge"],
       "env": {
         "REDHAT_TOKEN": "${REDHAT_TOKEN}"
       }
@@ -100,7 +100,7 @@ orchestrate connections set-credentials --app-id "redhat-knowledge" --env draft 
 orchestrate toolkits import --kind mcp \
   --name redhat-knowledge \
   --description "Red Hat Knowledge Base" \
-  --command "npx -y @shonstephens/mcp-redhat-knowledge" \
+  --command "npx -y mcp-redhat-knowledge" \
   --tools "*" \
   --app-id redhat-knowledge
 ```
