@@ -11,6 +11,33 @@ An [MCP](https://modelcontextprotocol.io/) server for the Red Hat Knowledge Base
 | `searchDocumentation` | Search Red Hat product documentation for how-to guides and best practices |
 | `getErrata` | Get errata/advisory details by RHSA/RHBA/RHEA ID (CVEs, severity, affected products) |
 
+## Product Name Aliases
+
+The `searchKnowledgeBase` and `searchDocumentation` tools accept shorthand product names that are automatically resolved to the full names used by the KCS API:
+
+| Alias | Resolves To |
+|-------|-------------|
+| `OpenShift`, `OCP` | Red Hat OpenShift Container Platform |
+| `RHEL`, `Enterprise Linux` | Red Hat Enterprise Linux |
+| `Ansible`, `AAP` | Red Hat Ansible Automation Platform |
+| `Satellite` | Red Hat Satellite |
+| `IdM`, `IPA`, `FreeIPA` | Red Hat Enterprise Linux |
+| `SSO` | Red Hat Single Sign-On |
+| `Keycloak` | Red Hat build of Keycloak |
+| `Quay` | Red Hat Quay |
+| `ACM` | Red Hat Advanced Cluster Management for Kubernetes |
+| `ACS` | Red Hat Advanced Cluster Security for Kubernetes |
+| `Service Mesh` | Red Hat OpenShift Service Mesh |
+| `Virtualization` | Red Hat OpenShift Virtualization |
+| `OpenStack` | Red Hat OpenStack Platform |
+| `Ceph` | Red Hat Ceph Storage |
+| `Serverless` | Red Hat OpenShift Serverless |
+| `Pipelines` | Red Hat OpenShift Pipelines |
+| `GitOps` | Red Hat OpenShift GitOps |
+| `Logging` | Red Hat OpenShift Logging |
+
+You can also pass the full product name directly if your product is not in this list.
+
 ## Prerequisites
 
 - Node.js 18+
