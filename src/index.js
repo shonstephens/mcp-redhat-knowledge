@@ -80,6 +80,43 @@ async function getErratumData(advisoryId) {
   return res.json();
 }
 
+// --- Product name mapping ---
+
+const PRODUCT_ALIASES = {
+  "openshift": "Red Hat OpenShift Container Platform",
+  "ocp": "Red Hat OpenShift Container Platform",
+  "rhel": "Red Hat Enterprise Linux",
+  "enterprise linux": "Red Hat Enterprise Linux",
+  "ansible": "Red Hat Ansible Automation Platform",
+  "aap": "Red Hat Ansible Automation Platform",
+  "satellite": "Red Hat Satellite",
+  "idm": "Red Hat Enterprise Linux",
+  "ipa": "Red Hat Enterprise Linux",
+  "freeipa": "Red Hat Enterprise Linux",
+  "directory server": "Red Hat Directory Server",
+  "certificate system": "Red Hat Certificate System",
+  "sso": "Red Hat Single Sign-On",
+  "keycloak": "Red Hat build of Keycloak",
+  "quay": "Red Hat Quay",
+  "acm": "Red Hat Advanced Cluster Management for Kubernetes",
+  "acs": "Red Hat Advanced Cluster Security for Kubernetes",
+  "service mesh": "Red Hat OpenShift Service Mesh",
+  "virtualization": "Red Hat OpenShift Virtualization",
+  "openstack": "Red Hat OpenStack Platform",
+  "ceph": "Red Hat Ceph Storage",
+  "data grid": "Red Hat Data Grid",
+  "amq": "Red Hat AMQ",
+  "serverless": "Red Hat OpenShift Serverless",
+  "pipelines": "Red Hat OpenShift Pipelines",
+  "gitops": "Red Hat OpenShift GitOps",
+  "logging": "Red Hat OpenShift Logging",
+};
+
+function resolveProduct(input) {
+  if (!input) return undefined;
+  return PRODUCT_ALIASES[input.toLowerCase()] || input;
+}
+
 // --- Formatting helpers ---
 
 function formatSearchResults(data) {
@@ -194,7 +231,7 @@ server.tool(
   },
   async ({ query, maxResults, product, documentType }) => {
     const fq = [];
-    if (product) fq.push(`product:"${product}"`);
+    if (product) fq.push(`product:"${resolveProduct(product)}"`);
     if (documentType) fq.push(`documentKind:"${documentType}"`);
 
     const data = await kcsSearch(query, {
@@ -241,7 +278,7 @@ server.tool(
   },
   async ({ topic, product }) => {
     const fq = ['documentKind:"Documentation"'];
-    if (product) fq.push(`product:"${product}"`);
+    if (product) fq.push(`product:"${resolveProduct(product)}"`);
 
     const data = await kcsSearch(topic, {
       rows: 10,
