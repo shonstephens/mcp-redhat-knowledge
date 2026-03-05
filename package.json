@@ -2,9 +2,33 @@
   "name": "@shonstephens/mcp-redhat-knowledge",
   "version": "0.1.0",
   "description": "MCP server for Red Hat Knowledge Base",
-  "private": false,
+  "type": "module",
+  "bin": {
+    "mcp-redhat-knowledge": "./src/index.js"
+  },
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "redhat",
+    "knowledge-base"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shonstephens/mcp-redhat-knowledge.git"
+  },
+  "homepage": "https://github.com/shonstephens/mcp-redhat-knowledge#readme",
+  "bugs": {
+    "url": "https://github.com/shonstephens/mcp-redhat-knowledge/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^3.25.0"
+  },
   "publishConfig": {
     "access": "restricted"
-  },
-  "license": "MIT"
+  }
 }
