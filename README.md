@@ -51,6 +51,41 @@ Set your Red Hat offline API token in your shell profile:
 export REDHAT_TOKEN="your-offline-token-here"
 ```
 
+### Gemini CLI
+
+Add to `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "redhat-knowledge": {
+      "command": "npx",
+      "args": ["-y", "mcp-redhat-knowledge"],
+      "env": {
+        "REDHAT_TOKEN": "$REDHAT_TOKEN"
+      }
+    }
+  }
+}
+```
+
+### watsonx Orchestrate
+
+```bash
+# Add a connection for the Red Hat API token
+orchestrate connections add --app-id "redhat-knowledge"
+orchestrate connections configure --app-id redhat-knowledge --env draft --kind key_value --type team --url "https://access.redhat.com"
+orchestrate connections set-credentials --app-id "redhat-knowledge" --env draft -e REDHAT_TOKEN=your-offline-token-here
+
+# Import the MCP toolkit
+orchestrate toolkits import --kind mcp \
+  --name redhat-knowledge \
+  --description "Red Hat Knowledge Base" \
+  --command "npx -y mcp-redhat-knowledge" \
+  --tools "*" \
+  --app-id redhat-knowledge
+```
+
 ### Claude Code
 
 Add to `~/.claude/settings.json`:
@@ -88,38 +123,15 @@ Add to `.vscode/mcp.json` in your workspace:
 }
 ```
 
-### watsonx Orchestrate
-
-```bash
-# Add a connection for the Red Hat API token
-orchestrate connections add --app-id "redhat-knowledge"
-orchestrate connections configure --app-id redhat-knowledge --env draft --kind key_value --type team --url "https://access.redhat.com"
-orchestrate connections set-credentials --app-id "redhat-knowledge" --env draft -e REDHAT_TOKEN=your-offline-token-here
-
-# Import the MCP toolkit
-orchestrate toolkits import --kind mcp \
-  --name redhat-knowledge \
-  --description "Red Hat Knowledge Base" \
-  --command "npx -y mcp-redhat-knowledge" \
-  --tools "*" \
-  --app-id redhat-knowledge
-```
-
-### Podman (containerized)
-
-Run as a container for use with any MCP client:
-
-```bash
-podman run -i --rm \
-  --env REDHAT_TOKEN \
-  ghcr.io/shonstephens/mcp-redhat-knowledge:latest
-```
-
-Point your MCP client at the container using `podman run -i --rm` as the command, similar to the VS Code example above.
-
 ## Authentication
 
 The server exchanges your Red Hat offline API token for a short-lived bearer token via Red Hat SSO. Tokens are cached and refreshed automatically. The `getErrata` tool uses the public Security Data API and does not require authentication.
+
+## Related MCP Servers
+
+- [mcp-redhat-support](https://github.com/shonstephens/mcp-redhat-support) - Support case management
+- [mcp-redhat-account](https://github.com/shonstephens/mcp-redhat-account) - Account management
+- [mcp-redhat-subscription](https://github.com/shonstephens/mcp-redhat-subscription) - Subscription management
 
 ## License
 
