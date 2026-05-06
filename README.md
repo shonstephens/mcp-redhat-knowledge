@@ -11,6 +11,18 @@ An [MCP](https://modelcontextprotocol.io/) server for the Red Hat Knowledge Base
 | `searchDocumentation` | Search Red Hat product documentation for how-to guides and best practices |
 | `getErrata` | Get errata/advisory details by RHSA/RHBA/RHEA ID (CVEs, severity, affected products) |
 
+All tools accept optional `offset` and `limit` parameters — see [Pagination](#pagination).
+
+## Pagination
+
+All tools accept optional `offset` (default 0) and `limit` (default 30000) parameters to chunk large responses — full KCS articles routinely exceed typical MCP tool-result token caps when returned whole. When a response is truncated, the output ends with a footer like:
+
+```
+[truncated: showing chars 0-30000 of 102783. Call again with offset=30000 for the next chunk.]
+```
+
+Pass that `offset` back to fetch the next chunk. Small responses return in one call.
+
 ## Product Name Aliases
 
 The `searchKnowledgeBase` and `searchDocumentation` tools accept shorthand product names that are automatically resolved to the full names used by the KCS API:
