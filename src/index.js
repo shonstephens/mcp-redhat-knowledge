@@ -213,26 +213,61 @@ function formatErrata(csaf) {
   return parts.join("\n");
 }
 
+// --- Pagination ---
+
+const DEFAULT_CHUNK = 30000;
+
+function paginate(text, offset, limit, label) {
+  const total = text.length;
+  const start = Math.min(offset, total);
+  const end = Math.min(start + limit, total);
+  const slice = text.slice(start, end);
+  const header = `# ${label}\n# chars ${start}-${end} of ${total}\n\n`;
+  const footer =
+    end < total
+      ? `\n\n[truncated: showing chars ${start}-${end} of ${total}. Call again with offset=${end} for the next chunk.]`
+      : "";
+  return `${header}${slice}${footer}`;
+}
+
+const paginationSchema = {
+  offset: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .default(0)
+    .describe(`Byte offset into the rendered response. Default 0. Use the value from the previous call's "[truncated]" footer to fetch the next chunk.`),
+  limit: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(DEFAULT_CHUNK)
+    .describe(`Maximum characters to return in this call. Default ${DEFAULT_CHUNK} keeps responses under typical MCP tool-result token caps.`),
+};
+
 // --- MCP Server ---
 
 const server = new McpServer({
   name: "mcp-redhat-knowledge",
-  version: "0.1.0",
+  version: "1.2.0",
 });
 
 server.registerTool(
   "searchKnowledgeBase",
   {
-    description: "Search Red Hat Knowledge Base for solutions and articles. Use error messages or technical keywords. Filter by product or documentType.",
+    description: "Search Red Hat Knowledge Base for solutions and articles. Use error messages or technical keywords. Filter by product or documentType. Large result sets are paginated — call repeatedly with `offset` to read subsequent chunks.",
     inputSchema: {
       query: z.string().describe("Search keywords"),
       maxResults: z.number().min(1).max(50).optional().default(10).describe("Max results 1-50 (default: 10)"),
       product: z.string().optional().describe("Product filter: 'OpenShift', 'RHEL' (default: OpenShift)"),
       documentType: z.string().optional().describe("Type: 'Solution', 'Documentation', 'Article'"),
+      ...paginationSchema,
     },
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  async ({ query, maxResults, product, documentType }) => {
+  async ({ query, maxResults, product, documentType, offset, limit }) => {
     const fq = [];
     if (product) fq.push(`product:"${resolveProduct(product)}"`);
     if (documentType) fq.push(`documentKind:"${documentType}"`);
@@ -244,7 +279,7 @@ server.registerTool(
     });
 
     return {
-      content: [{ type: "text", text: formatSearchResults(data) }],
+      content: [{ type: "text", text: paginate(formatSearchResults(data), offset, limit, `searchKnowledgeBase: "${query}"`) }],
     };
   }
 );
@@ -252,13 +287,14 @@ server.registerTool(
 server.registerTool(
   "getSolution",
   {
-    description: "Get full content of a Knowledge Base article. Use article ID from search results.",
+    description: "Get full content of a Knowledge Base article. Use article ID from search results. Large articles are paginated — call repeatedly with `offset` to read subsequent chunks.",
     inputSchema: {
       solutionId: z.string().describe("Article ID (numeric)"),
+      ...paginationSchema,
     },
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  async ({ solutionId }) => {
+  async ({ solutionId, offset, limit }) => {
     const data = await kcsSearch(`id:${solutionId}`, {
       rows: 1,
       fields: "id,title,abstract,documentKind,view_uri,product,issue,solution_environment,solution_rootcause,solution_resolution,solution_diagnosticsteps,lastModifiedDate,createdDate",
@@ -270,7 +306,7 @@ server.registerTool(
     }
 
     return {
-      content: [{ type: "text", text: formatArticle(docs[0]) }],
+      content: [{ type: "text", text: paginate(formatArticle(docs[0]), offset, limit, `getSolution: ${solutionId}`) }],
     };
   }
 );
@@ -278,14 +314,15 @@ server.registerTool(
 server.registerTool(
   "searchDocumentation",
   {
-    description: "Search Red Hat documentation for how-to guides and best practices.",
+    description: "Search Red Hat documentation for how-to guides and best practices. Large result sets are paginated — call repeatedly with `offset` to read subsequent chunks.",
     inputSchema: {
       topic: z.string().describe("Topic to search"),
       product: z.string().optional().describe("Product (default: OpenShift)"),
+      ...paginationSchema,
     },
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  async ({ topic, product }) => {
+  async ({ topic, product, offset, limit }) => {
     const fq = ['documentKind:"Documentation"'];
     if (product) fq.push(`product:"${resolveProduct(product)}"`);
 
@@ -296,7 +333,7 @@ server.registerTool(
     });
 
     return {
-      content: [{ type: "text", text: formatSearchResults(data) }],
+      content: [{ type: "text", text: paginate(formatSearchResults(data), offset, limit, `searchDocumentation: "${topic}"`) }],
     };
   }
 );
@@ -304,16 +341,17 @@ server.registerTool(
 server.registerTool(
   "getErrata",
   {
-    description: "Get errata/advisory details by advisory ID (RHSA, RHBA, RHEA). Returns CVEs, severity, affected packages.",
+    description: "Get errata/advisory details by advisory ID (RHSA, RHBA, RHEA). Returns CVEs, severity, affected packages. Large advisories are paginated — call repeatedly with `offset` to read subsequent chunks.",
     inputSchema: {
       advisoryId: z.string().describe("Advisory ID (e.g. 'RHSA-2024:1234')"),
+      ...paginationSchema,
     },
     annotations: { readOnlyHint: true, openWorldHint: true },
   },
-  async ({ advisoryId }) => {
+  async ({ advisoryId, offset, limit }) => {
     const data = await getErratumData(advisoryId);
     return {
-      content: [{ type: "text", text: formatErrata(data) }],
+      content: [{ type: "text", text: paginate(formatErrata(data), offset, limit, `getErrata: ${advisoryId}`) }],
     };
   }
 );
